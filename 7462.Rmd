@@ -9,9 +9,7 @@ output:
 knitr::opts_chunk$set(echo = TRUE)
 knitr::opts_chunk$set(warning = FALSE)
 knitr::opts_chunk$set(message = FALSE)
-knitr::opts_chunk$set(fig.width  = 3, 
-                      fig.height = 2,
-                      fig.align  = 'center')
+#knitr::opts_chunk$set(fig.width  = 3,  fig.height = 2,fig.align  = 'center')
 knitr::opts_chunk$set(tidy.opts = list(width.cutoff = 30))
 
 #Working directory for .RMD
