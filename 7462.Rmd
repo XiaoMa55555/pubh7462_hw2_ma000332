@@ -1,0 +1,131 @@
+---
+title: '7462'
+output:
+  github_document: default
+---
+
+```{r setup, include=FALSE}
+## Set global options for compiled document
+knitr::opts_chunk$set(echo = TRUE)
+knitr::opts_chunk$set(warning = FALSE)
+knitr::opts_chunk$set(message = FALSE)
+knitr::opts_chunk$set(fig.width  = 3, 
+                      fig.height = 2,
+                      fig.align  = 'center')
+knitr::opts_chunk$set(tidy.opts = list(width.cutoff = 30))
+
+#Working directory for .RMD
+knitr::opts_knit$set(echo = TRUE,
+                     root.dir = rprojroot::find_rstudio_root_file())
+options(scipen = 999)
+options(digits = 3)
+
+#Load the good stuff
+library(tidyverse)
+library(DataExplorer)
+library(scales)
+library(gt)
+library(ggrepel)
+```
+
+# 3.1 Data Exploration & Cleaning
+```{r}
+BRFSS <- read.csv("./data/brfss_smart_2010.csv", stringsAsFactors=TRUE)
+#names(BRFSS)
+brfss2 <- BRFSS %>%
+  separate(col = Locationdesc, into = c("State","2","County"), sep = " ") %>%
+  mutate(Prop_response=Data_value) %>%
+  filter(Topic=="Overall Health") %>%
+  select(Year,State,County,Response,Sample_Size,Prop_response)
+brfss2$Year<-as.factor(brfss2$Year)
+brfss2$State<-as.factor(brfss2$State)
+brfss2$County<-as.factor(brfss2$County)
+```
+
+# 3.2 Data Description
+
+- There are 10625 observations and 6 variables after data cleaning.
+- Each case is a unique contain the Year, State, County, Response, Sample size, Proportion of response.
+- Year, State, County, Response are quite intuitive and straightforward, Response describes the content of response, Sample size describes the observed locations, Prop_response states the Proportion of response when respondents filling in the questionnaire.
+
+# 3.3 Do Data Science
+# 3.3.1
+```{r message=FALSE, warning=FALSE}
+brfss2 %>%
+  filter(Year==2004) %>%
+  distinct(State, County)%>%
+  group_by(State) %>%
+  summarise(Locations=n()) %>%
+  filter(Locations==6) %>%
+  gt() %>%
+  tab_header(title = "States observed at 6 locations") %>%
+  tab_source_note(source_note = "Data source: Behavioral Risk Factors Surveillance System")
+```
+
+- Connecticut and Utah were observed at 6 locations.
+
+# 3.3.2
+```{r message=FALSE, warning=FALSE}
+brfss3 <- brfss2 %>%
+  distinct(State, County,Year) %>%
+  group_by(Year,State) %>%
+  summarise(Oberved_location=n()) %>%
+  ungroup(Year,State) %>%
+  mutate(State=fct_reorder(State,Oberved_location,mean,.desc = TRUE)) 
+
+brfss3 %>%
+  ggplot(aes(x=Year,y=Oberved_location,group=State,color=State)) +  
+  geom_point(color = "grey", size = 0.5) +
+  geom_line(size = 0.3, alpha = 0.8) +
+  geom_line(data =brfss3[brfss3$State=="NJ",],
+            aes(x=Year,y=Oberved_location), 
+            color = "dodgerblue4", size = 0.6) + 
+  geom_label(label="New Jersey", x=2004,y=24.2,label.padding = unit(0.55, "lines"), 
+    label.size = 0.35,
+    color = "dodgerblue4",
+    fill="white")+
+  xlab("")+
+  ylab("Observed number")+
+  theme_light()+
+  labs(title = "Number of observed locations in each state",
+       subtitle = "From 2002 to 2010",
+        caption = "Data from the Behavioral Risk Factors Surveillance System (BRFSS)")
+```
+
+- There are some fluctuations of each states during years, but the line do not have a clear increasing or decreasing pattern.
+- It's noteworthy that Florida had distinct change during the years. 
+
+# 3.3.3
+```{r message=FALSE, warning=FALSE}
+brfss4 <- brfss2 %>%
+  filter(State=="MN",Year %in% c(2002,2006,2010),Response %in% c("Excellent","Good","Poor")) %>%
+  group_by(Year,Response) %>%
+  summarise(across(c(Sample_Size,Prop_response),  list(mean = mean, sd = sd), na.rm=FALSE, .names = "{.col}.{.fn}"))
+
+brfss4 %>%
+  gt() %>%
+  fmt_number(columns = vars(Sample_Size.mean,Sample_Size.sd,Prop_response.mean,Prop_response.sd), 
+             decimals = 2) %>%
+  fmt_percent(columns = vars(Prop_response.mean), 
+              decimals = 2, 
+              scale_values = FALSE)%>%
+  tab_header(title = "Mean and standard deviation of responses",subtitle = "Years of 2002, 2006, 2010, Responses: sample size and proportion") %>%
+  tab_source_note(source_note = "Data source: Behavioral Risk Factors Surveillance System")
+```
+# 3.3.4
+```{r message=FALSE, warning=FALSE}
+brfss5<-brfss4 %>%
+  pivot_longer(cols = c(Sample_Size.mean,Sample_Size.sd,Prop_response.mean,Prop_response.sd),names_to = "Statistics",values_to = "Value")
+
+brfss5 %>%
+  ggplot(aes(x=Year,y=Value,group=Response,color=Response)) +
+  geom_point() +
+  geom_line()+
+  facet_wrap(~Statistics, scales = "free")+
+  xlab("")+
+  ylab("Observed number")+
+  theme_light()+
+  labs(title = "Mean and standard deviation of responses",subtitle = "Years of 2002, 2006, 2010",
+        caption = "Data from the Behavioral Risk Factors Surveillance System (BRFSS)")
+```
+
