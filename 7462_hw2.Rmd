@@ -1,33 +1,17 @@
 ---
-title: '7462'
-output:
-  github_document: default
+title: "pubh7462_hw2"
+author: "Xiao Ma"
+output: github_document
 ---
-
-```{r setup, include=FALSE}
-## Set global options for compiled document
-knitr::opts_chunk$set(echo = TRUE)
-knitr::opts_chunk$set(warning = FALSE)
-knitr::opts_chunk$set(message = FALSE)
-#knitr::opts_chunk$set(fig.width  = 3,  fig.height = 2,fig.align  = 'center')
-knitr::opts_chunk$set(tidy.opts = list(width.cutoff = 30))
-
-#Working directory for .RMD
-knitr::opts_knit$set(echo = TRUE,
-                     root.dir = rprojroot::find_rstudio_root_file())
-options(scipen = 999)
-options(digits = 3)
-
-#Load the good stuff
-library(tidyverse)
+# 3.1 Data Exploration & Cleaning
+```{r message=FALSE, warning=FALSE}
 library(DataExplorer)
+library(tidyverse)
 library(scales)
+library(ggplot2)
 library(gt)
 library(ggrepel)
-```
-
-# 3.1 Data Exploration & Cleaning
-```{r}
+library(paletteer)
 BRFSS <- read.csv("./data/brfss_smart_2010.csv", stringsAsFactors=TRUE)
 #names(BRFSS)
 brfss2 <- BRFSS %>%
@@ -45,6 +29,7 @@ brfss2$County<-as.factor(brfss2$County)
 - There are 10625 observations and 6 variables after data cleaning.
 - Each case is a unique contain the Year, State, County, Response, Sample size, Proportion of response.
 - Year, State, County, Response are quite intuitive and straightforward, Response describes the content of response, Sample size describes the observed locations, Prop_response states the Proportion of response when respondents filling in the questionnaire.
+- Each one observed locations have more than one response.
 
 # 3.3 Do Data Science
 # 3.3.1
@@ -60,7 +45,7 @@ brfss2 %>%
   tab_source_note(source_note = "Data source: Behavioral Risk Factors Surveillance System")
 ```
 
-- Connecticut and Utah were observed at 6 locations.
+- CO, NM, SC, TX, UT, VT are states observed at 6 locations.
 
 # 3.3.2
 ```{r message=FALSE, warning=FALSE}
@@ -110,6 +95,11 @@ brfss4 %>%
   tab_header(title = "Mean and standard deviation of responses",subtitle = "Years of 2002, 2006, 2010, Responses: sample size and proportion") %>%
   tab_source_note(source_note = "Data source: Behavioral Risk Factors Surveillance System")
 ```
+
+- For mean of proportion of response and sample size, it is obvious that group of excellent and good have larger mean than poor group. The plot have an increasing trend.
+- Sd of Prop_response of group of excellent is larger than that of good and poor group.
+- Sd of Sample size of group of excellent and good are really close and is larger than that of poor group.
+
 # 3.3.4
 ```{r message=FALSE, warning=FALSE}
 brfss5<-brfss4 %>%
