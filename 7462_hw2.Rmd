@@ -32,7 +32,8 @@ brfss2$County<-as.factor(brfss2$County)
 
 # 3.3 Do Data Science
 # 3.3.1
-```{r message=FALSE, warning=FALSE}
+
+```{r message=FALSE, warning=TRUE}
 brfss2 %>%
   filter(Year==2004) %>%
   distinct(State, County) %>% #exclude duplicate
