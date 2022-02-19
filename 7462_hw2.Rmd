@@ -25,8 +25,7 @@ brfss2$County<-as.factor(brfss2$County)
 ```
 
 # 3.2 Data Description
-
-- There are 10625 observations and 6 variables after data cleaning.
+- There are `r dim(brfss2)[1]` observations and `r dim(brfss2)[2]` variables after data cleaning.
 - Each case is a unique contain the Year, State, County, Response, Sample size, Proportion of response.
 - Year, State, County, Response are quite intuitive and straightforward, Response describes the content of response, Sample size describes the observed locations, Prop_response states the Proportion of response when respondents filling in the questionnaire.
 - Each one observed locations have more than one response.
@@ -36,7 +35,7 @@ brfss2$County<-as.factor(brfss2$County)
 ```{r message=FALSE, warning=FALSE}
 brfss2 %>%
   filter(Year==2004) %>%
-  distinct(State, County)%>%
+  distinct(State, County) %>% #exclude duplicate
   group_by(State) %>%
   summarise(Locations=n()) %>%
   filter(Locations==6) %>%
@@ -49,7 +48,7 @@ brfss2 %>%
 
 # 3.3.2
 ```{r message=FALSE, warning=FALSE}
-brfss3 <- brfss2 %>%
+brfss3 <- brfss2 %>% #subset the data we need
   distinct(State, County,Year) %>%
   group_by(Year,State) %>%
   summarise(Oberved_location=n()) %>%
@@ -60,7 +59,7 @@ brfss3 %>%
   ggplot(aes(x=Year,y=Oberved_location,group=State,color=State)) +  
   geom_point(color = "grey", size = 0.5) +
   geom_line(size = 0.3, alpha = 0.8) +
-  geom_line(data =brfss3[brfss3$State=="NJ",],
+  geom_line(data =brfss3[brfss3$State=="NJ",], #let the NJ stand out
             aes(x=Year,y=Oberved_location), 
             color = "dodgerblue4", size = 0.6) + 
   geom_label(label="New Jersey", x=2004,y=24.2,label.padding = unit(0.55, "lines"), 
@@ -79,7 +78,7 @@ brfss3 %>%
 - It's noteworthy that Florida had distinct change during the years. 
 
 # 3.3.3
-```{r message=FALSE, warning=FALSE}
+```{r 3.3.3, message=FALSE, warning=FALSE}
 brfss4 <- brfss2 %>%
   filter(State=="MN",Year %in% c(2002,2006,2010),Response %in% c("Excellent","Good","Poor")) %>%
   group_by(Year,Response) %>%
@@ -91,11 +90,10 @@ brfss4 %>%
              decimals = 2) %>%
   fmt_percent(columns = vars(Prop_response.mean), 
               decimals = 2, 
-              scale_values = FALSE)%>%
+              scale_values = FALSE) %>%#change the value into percent
   tab_header(title = "Mean and standard deviation of responses",subtitle = "Years of 2002, 2006, 2010, Responses: sample size and proportion") %>%
   tab_source_note(source_note = "Data source: Behavioral Risk Factors Surveillance System")
 ```
-
 - For mean of proportion of response and sample size, it is obvious that group of excellent and good have larger mean than poor group. The plot have an increasing trend.
 - Sd of Prop_response of group of excellent is larger than that of good and poor group.
 - Sd of Sample size of group of excellent and good are really close and is larger than that of poor group.
@@ -103,7 +101,7 @@ brfss4 %>%
 # 3.3.4
 ```{r message=FALSE, warning=FALSE}
 brfss5<-brfss4 %>%
-  pivot_longer(cols = c(Sample_Size.mean,Sample_Size.sd,Prop_response.mean,Prop_response.sd),names_to = "Statistics",values_to = "Value")
+  pivot_longer(cols = c(Sample_Size.mean,Sample_Size.sd,Prop_response.mean,Prop_response.sd),names_to = "Statistics",values_to = "Value") #change the wide data into long
 
 brfss5 %>%
   ggplot(aes(x=Year,y=Value,group=Response,color=Response)) +
