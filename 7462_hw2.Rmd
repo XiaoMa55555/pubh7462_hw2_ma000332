@@ -3,6 +3,26 @@ title: "pubh7462_hw2"
 author: "Xiao Ma"
 output: github_document
 ---
+```{r setup, include=FALSE}
+## Set global options for compiled document
+knitr::opts_chunk$set(echo = TRUE)
+knitr::opts_chunk$set(warning = FALSE)
+knitr::opts_chunk$set(message = FALSE)
+knitr::opts_chunk$set(fig.width  = 3, 
+                      fig.height = 2,
+                      fig.align  = 'center')
+knitr::opts_chunk$set(tidy.opts = list(width.cutoff = 30))
+
+#Working directory for .RMD
+knitr::opts_knit$set(echo = TRUE,
+                     root.dir = rprojroot::find_rstudio_root_file())
+options(scipen = 999)
+options(digits = 3)
+
+#Load the good stuff
+library(tidyverse)
+```
+
 # 3.1 Data Exploration & Cleaning
 ```{r message=FALSE, warning=FALSE}
 library(DataExplorer)
